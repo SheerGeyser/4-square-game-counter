@@ -2,7 +2,7 @@
   "configVersion": "v3",
   "app": {
     "appId": 1110165,
-    "appName": "4 Square Counter",
+    "appName": "4-Square Game Counter",
     "appType": "app",
     "version": {
       "code": 1,
@@ -10,7 +10,7 @@
     },
     "icon": "icon.png",
     "vender": "SheerGeyser",
-    "description": "Four-sector scoreboard: tap wedges to count, triple-tap center to reset. For Amazfit / Zepp OS round watches."
+    "description": "Score four players or teams on your wrist. Round layout with K/D/V/G sectors, tap to add or subtract, triple-tap center to reset all."
   },
   "permissions": [
     "data:os.device.info",
@@ -46,7 +46,7 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "4 Square Counter"
+      "appName": "4-Square Game Counter"
     },
     "zh-CN": {
       "appName": "四方计分"

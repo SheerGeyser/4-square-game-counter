@@ -1,2 +1,2 @@
 msgid "appName"
-msgstr "4 Square Counter"
+msgstr "4-Square Game Counter"
