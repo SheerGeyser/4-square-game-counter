@@ -1,6 +1,7 @@
 import * as hmUI from "@zos/ui";
 import { event } from "@zos/ui";
 import { log as Logger } from "@zos/utils";
+import { localStorage } from "@zos/storage";
 import {
   DEVICE_WIDTH,
   DEVICE_HEIGHT,
@@ -11,6 +12,28 @@ import {
 } from "zosLoader:./index.page.[pf].layout.js";
 
 const logger = Logger.getLogger("helloworld");
+
+const STORAGE_KEY_COUNTS = "fourSquareCounts_v1";
+
+function loadPersistedCounts() {
+  const raw = localStorage.getItem(STORAGE_KEY_COUNTS);
+  if (raw == null || raw === "") {
+    return [0, 0, 0, 0];
+  }
+  try {
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr) && arr.length === 4) {
+      return arr.map((n) => Math.max(0, Math.floor(Number(n)) || 0));
+    }
+  } catch (e) {
+    logger.debug("loadPersistedCounts parse error");
+  }
+  return [0, 0, 0, 0];
+}
+
+function saveCounts(counts) {
+  localStorage.setItem(STORAGE_KEY_COUNTS, JSON.stringify(counts));
+}
 
 /** Тройной тап в центре: не больше этого интервала (мс) между первым и последним из трёх тапов по скользящему окну */
 const TRIPLE_TAP_WINDOW_MS = 1000;
@@ -85,6 +108,8 @@ Page({
   },
   build() {
     logger.debug("page build invoked");
+    /** После долгого сна процесс мог быть убит — состояние в памяти пустое; всегда подмешиваем сохранённые счётчики перед отрисовкой. */
+    this.state.counts = loadPersistedCounts();
 
     const W = DEVICE_WIDTH;
     const H = DEVICE_HEIGHT;
@@ -211,6 +236,7 @@ Page({
         );
         if (centerTapTimes.length >= 3) {
           page.state.counts = [0, 0, 0, 0];
+          saveCounts(page.state.counts);
           centerTapTimes = [];
           logger.debug("triple tap center: counters reset");
           redraw();
@@ -229,6 +255,7 @@ Page({
         next = Math.max(0, next);
       }
       page.state.counts[cellIndex] = next;
+      saveCounts(page.state.counts);
       redraw();
     });
   },
