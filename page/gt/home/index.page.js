@@ -6,7 +6,6 @@ import {
   DEVICE_HEIGHT,
   LABEL_TEXT_SIZE,
   COUNTER_TEXT_SIZE,
-  ICON_TEXT_SIZE,
   LETTER_CENTERS,
   COUNTER_CENTERS,
 } from "zosLoader:./index.page.[pf].layout.js";
@@ -18,6 +17,32 @@ const TRIPLE_TAP_WINDOW_MS = 1000;
 
 const COLORS = [0x701010, 0x441a3c, 0x1a2a44, 0x3d2b1f];
 const LABELS = ["K", "D", "V", "G"];
+
+/** Светлее на ~10%: смешивание канала с белым */
+function lightenColor(rgb, amount) {
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = rgb & 0xff;
+  const nr = Math.min(255, Math.round(r + (255 - r) * amount));
+  const ng = Math.min(255, Math.round(g + (255 - g) * amount));
+  const nb = Math.min(255, Math.round(b + (255 - b) * amount));
+  return (nr << 16) | (ng << 8) | nb;
+}
+
+function radToDeg(rad) {
+  return (rad * 180) / Math.PI;
+}
+
+/** Разделители секций: луч от центра к краю (текст рисуется поверх, чтобы линии не перекрывали буквы и цифры) */
+function drawRadialSeparator(canvas, cx, cy, r0, r1, angleRad, color, lineWidth) {
+  canvas.setPaint({ color, line_width: lineWidth });
+  canvas.drawLine({
+    x1: cx + r0 * Math.cos(angleRad),
+    y1: cy + r0 * Math.sin(angleRad),
+    x2: cx + r1 * Math.cos(angleRad),
+    y2: cy + r1 * Math.sin(angleRad),
+  });
+}
 
 /** Клин от центра (cx,cy): углы в радианах, мат. угол = atan2(dy,dx) */
 function drawPieSlice(canvas, cx, cy, r, a0, a1, color) {
@@ -67,7 +92,20 @@ Page({
     const cy = H / 2;
     const R = Math.min(cx, cy) - 2;
     const R_INNER = 32;
-    const R_ICON = R * 0.78;
+
+    /** «+»: заливка светлее; обводка дуги чёрная. «−»: обводка дуги белая */
+    const PLUS_LIGHTEN = 0.1;
+    const PLUS_ARC_COLOR = 0x000000;
+    const MINUS_ARC_COLOR = 0xffffff;
+    /** Толщина дуги и для «+», и для «−» */
+    const ARC_LINE_WIDTH = 5;
+
+    /** 8 лучей по границам секций (чёрные); рисуются под текстом */
+    const RADIAL_SEP_COLOR = 0x000000;
+    const RADIAL_SEP_WIDTH = 2;
+    /** Начало луча: 0 = от центра экрана; можно увеличить (напр. R_INNER), чтобы не заходить в центральную зону */
+    const RADIAL_SEP_R0 = 0;
+    const RADIAL_SEP_R1 = R;
 
     const page = this;
 
@@ -82,17 +120,6 @@ Page({
       { a0: (3 * Math.PI) / 4, a1: Math.PI, color: COLORS[2] },
     ];
 
-    const iconAnglesDeg = [
-      (-180 + -135) / 2,
-      (-135 + -90) / 2,
-      (-90 + -45) / 2,
-      (-45 + 0) / 2,
-      (0 + 45) / 2,
-      (45 + 90) / 2,
-      (90 + 135) / 2,
-      (135 + 180) / 2,
-    ];
-
     const canvas = hmUI.createWidget(hmUI.widget.CANVAS, {
       x: 0,
       y: 0,
@@ -104,8 +131,41 @@ Page({
       canvas.clear({ x: 0, y: 0, w: W, h: H });
       const counts = page.state.counts;
 
+      wedges.forEach((wedge, k) => {
+        const isPlus = k % 2 === 1;
+        const fill = isPlus
+          ? lightenColor(wedge.color, PLUS_LIGHTEN)
+          : wedge.color;
+        drawPieSlice(canvas, cx, cy, R, wedge.a0, wedge.a1, fill);
+      });
+
+      wedges.forEach((wedge, k) => {
+        const isPlus = k % 2 === 1;
+        canvas.setPaint({
+          color: isPlus ? PLUS_ARC_COLOR : MINUS_ARC_COLOR,
+          line_width: ARC_LINE_WIDTH,
+        });
+        canvas.strokeArc({
+          center_x: cx,
+          center_y: cy,
+          radius_x: R,
+          radius_y: R,
+          start_angle: radToDeg(wedge.a0),
+          end_angle: radToDeg(wedge.a1),
+        });
+      });
+
       wedges.forEach((wedge) => {
-        drawPieSlice(canvas, cx, cy, R, wedge.a0, wedge.a1, wedge.color);
+        drawRadialSeparator(
+          canvas,
+          cx,
+          cy,
+          RADIAL_SEP_R0,
+          RADIAL_SEP_R1,
+          wedge.a0,
+          RADIAL_SEP_COLOR,
+          RADIAL_SEP_WIDTH,
+        );
       });
 
       for (let i = 0; i < 4; i++) {
@@ -130,19 +190,6 @@ Page({
         });
       }
 
-      for (let k = 0; k < 8; k++) {
-        const ang = (iconAnglesDeg[k] * Math.PI) / 180;
-        const ix = cx + R_ICON * Math.cos(ang);
-        const iy = cy + R_ICON * Math.sin(ang);
-        const isMinus = k % 2 === 0;
-        canvas.drawText({
-          x: ix - ICON_TEXT_SIZE / 2,
-          y: iy - ICON_TEXT_SIZE / 2,
-          text: isMinus ? "-" : "+",
-          text_size: ICON_TEXT_SIZE,
-          color: 0xdddddd,
-        });
-      }
     };
 
     redraw();

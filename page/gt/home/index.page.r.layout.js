@@ -61,16 +61,22 @@ export const LETTER_CENTERS = [
   LETTER_CENTER_G,
 ];
 
-// --- 2) Счётчики: «удалённость» от центра экрана ---------------------------
+// --- 2) Счётчики: «удалённость» от центра + те же ручные сдвиги, что у букв ---
 //
 // Позиция счётчика = центр четверти, сдвинутая к центру экрана на долю
 // COUNTER_BLEND_TOWARD_SCREEN_CENTER (0 = остаётся в центре четверти, 1 = в центре экрана),
-// затем глобальный сдвиг COUNTER_GLOBAL_OFFSET.
+// затем COUNTER_GLOBAL_OFFSET и затем COUNTER_OFFSET_* (по умолчанию совпадают с LETTER_OFFSET_*).
 //
-export const COUNTER_BLEND_TOWARD_SCREEN_CENTER = 0.25;
+export const COUNTER_BLEND_TOWARD_SCREEN_CENTER = 0.1;
 
 /** Сдвиг всех счётчиков одним вектором (px), после blend */
 export const COUNTER_GLOBAL_OFFSET = { x: 0, y: 0 };
+
+/** Подстройка центра цифры по секциям (те же значения, что у букв — можно менять отдельно) */
+export const COUNTER_OFFSET_K = { x: 23, y: -2 };
+export const COUNTER_OFFSET_D = { x: -5, y: -2 };
+export const COUNTER_OFFSET_V = { x: 23, y: -20 };
+export const COUNTER_OFFSET_G = { x: -5, y: -20 };
 
 const quarterCenters = [
   { x: halfW / 2, y: halfH / 2 },
@@ -79,14 +85,26 @@ const quarterCenters = [
   { x: halfW + restW / 2, y: halfH + restH / 2 },
 ];
 
-/** Центры цифр счётчика (после blend и global offset) — для отрисовки */
-export const COUNTER_CENTERS = quarterCenters.map((qc) => ({
-  x:
-    qc.x +
-    (cx - qc.x) * COUNTER_BLEND_TOWARD_SCREEN_CENTER +
-    COUNTER_GLOBAL_OFFSET.x,
-  y:
-    qc.y +
-    (cy - qc.y) * COUNTER_BLEND_TOWARD_SCREEN_CENTER +
-    COUNTER_GLOBAL_OFFSET.y,
-}));
+const COUNTER_OFFSETS = [
+  COUNTER_OFFSET_K,
+  COUNTER_OFFSET_D,
+  COUNTER_OFFSET_V,
+  COUNTER_OFFSET_G,
+];
+
+/** Центры цифр счётчика (после blend, global offset и per-section offset) — для отрисовки */
+export const COUNTER_CENTERS = quarterCenters.map((qc, i) => {
+  const o = COUNTER_OFFSETS[i];
+  return {
+    x:
+      qc.x +
+      (cx - qc.x) * COUNTER_BLEND_TOWARD_SCREEN_CENTER +
+      COUNTER_GLOBAL_OFFSET.x +
+      o.x,
+    y:
+      qc.y +
+      (cy - qc.y) * COUNTER_BLEND_TOWARD_SCREEN_CENTER +
+      COUNTER_GLOBAL_OFFSET.y +
+      o.y,
+  };
+});
