@@ -1,2 +1,2 @@
 msgid "appName"
-msgstr "你好 Zepp OS4"
+msgstr "四方计分"

@@ -1,13 +1,21 @@
 {
-  "name": "helloworld",
+  "name": "4-square-game-counter",
   "version": "1.0.0",
-  "description": "",
+  "description": "Zepp OS app: four-sector game counter for round watches (e.g. Amazfit Active 2).",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "SheerGeyser (https://github.com/SheerGeyser)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SheerGeyser/4-square-game-counter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SheerGeyser/4-square-game-counter/issues"
+  },
+  "homepage": "https://github.com/SheerGeyser/4-square-game-counter",
   "devDependencies": {
     "@zeppos/device-types": "^3.0.0"
   },

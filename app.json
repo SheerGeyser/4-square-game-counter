@@ -2,15 +2,15 @@
   "configVersion": "v3",
   "app": {
     "appId": 23783,
-    "appName": "Hello World",
+    "appName": "4 Square Counter",
     "appType": "app",
     "version": {
       "code": 1,
-      "name": "1.0.1"
+      "name": "1.0.0"
     },
     "icon": "icon.png",
-    "vender": "zepp",
-    "description": "hello world app"
+    "vender": "SheerGeyser",
+    "description": "Four-sector scoreboard: tap wedges to count, triple-tap center to reset. For Amazfit / Zepp OS round watches."
   },
   "permissions": [
     "data:os.device.info",
@@ -46,10 +46,10 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "Hello World"
+      "appName": "4 Square Counter"
     },
     "zh-CN": {
-      "appName": "你好世界"
+      "appName": "四方计分"
     }
   },
   "defaultLanguage": "en-US"
